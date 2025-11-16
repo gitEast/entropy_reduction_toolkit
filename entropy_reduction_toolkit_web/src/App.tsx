@@ -1,7 +1,9 @@
+import Views from './views'
+
 function App() {
   return (
     <>
-      <div className="">App</div>
+      <Views />
     </>
   )
 }
