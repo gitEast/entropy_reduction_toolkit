@@ -1,10 +1,52 @@
+import ScaleForm from './components/scale-form/index'
+import ResultTotal from './components/result-total'
+import ResultMain from './components/result-main'
+import ResultFive from './components/result-five'
+
+import { useState } from 'react'
+import type { IHandleChange_answer } from './type'
+
 const EntropyScale = () => {
+  const [answerMap, setAnswerMap] = useState<Map<number, number>>(new Map())
+  const [isFinished, setIsFinished] = useState(false)
+  const [totalScore, setTotalScore] = useState(0)
+
+  /* ------------ ⬇ 量表 ⬇ ------------ */
+  const handleChange_answer: IHandleChange_answer = (questionId, score) => {
+    setAnswerMap((prev) => {
+      const newMap = new Map(prev)
+      if (score) newMap.set(questionId, score)
+      else newMap.delete(questionId)
+      return newMap
+    })
+  }
+  const handleReset_answer = () => setAnswerMap(new Map())
+  const handleSubmit_answer = () => {
+    setIsFinished(true)
+    const sum = Array.from(answerMap.values()).reduce(
+      (prev, cur) => prev + cur,
+      0
+    )
+    setTotalScore(sum)
+  }
+  /* ------------ ⬆ 量表 ⬆ ------------ */
+
   return (
     <>
-      <p className="text-base indent-8">
-        这份评估量表包含了 32
-        条关于你的客观描述，请在仔细阅读每一条描述后，勾选一个和你实际情况最相符的选项。答案没有对错之分，请用内心最真实的声音作答，如果遇到难以确定的问题，不要停下来思考太久，请按第一感觉做出选择。
-      </p>
+      <ScaleForm
+        answerMap={answerMap}
+        isFinished={isFinished}
+        handleChange={handleChange_answer}
+        handleReset={handleReset_answer}
+        handleSubmit={handleSubmit_answer}
+      />
+      {isFinished && (
+        <div className="text-base">
+          <ResultTotal totalScore={totalScore} />
+          <ResultMain answerMap={answerMap} />
+          <ResultFive answerMap={answerMap} />
+        </div>
+      )}
     </>
   )
 }

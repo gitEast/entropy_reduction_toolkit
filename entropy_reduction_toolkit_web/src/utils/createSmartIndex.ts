@@ -1,5 +1,8 @@
 // 辅助类型：从 T[] 中提取 K 属性的所有可能值，形成联合类型
-type ValuesOfArray<A extends readonly unknown[], K extends keyof A[number]> = A[number][K]
+type ValuesOfArray<
+  A extends readonly unknown[],
+  K extends keyof A[number]
+> = A[number][K]
 
 // 原始数据项类型
 interface DataItem {
@@ -18,9 +21,22 @@ function createSmartIndex<T extends readonly DataItem[]>(items: T) {
     valueToLabelMap.set(`${item.value}`, item.label)
   }
 
+  // 创建 key 对象，支持 CONST_SCORE.key.NEVER 的访问方式
+  const keyObject = {} as Record<
+    ValuesOfArray<T, 'key'>,
+    ValuesOfArray<T, 'key'>
+  >
+  for (const item of items) {
+    keyObject[item.key as ValuesOfArray<T, 'key'>] = item.key as ValuesOfArray<
+      T,
+      'key'
+    >
+  }
+
   // 返回带有专用查找方法的对象
   return {
     items,
+    key: keyObject,
 
     /**
      * 根据 key 查找 value

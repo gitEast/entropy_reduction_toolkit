@@ -30,26 +30,29 @@ const Views = () => {
 
   return (
     <>
-      <Layout className="h-full">
+      <Layout className="h-full overflow-hidden">
         <Layout.Sider className="bg-white!" width={280}>
           <Menu
             mode="inline"
+            className="h-full"
             items={menuItems}
             selectedKeys={selectedMenuKeys}
             onClick={handleClick_menu}
           />
         </Layout.Sider>
-        <Layout.Content className="p-2 bg-white">
-          <h2 className="pb-2 text-2xl text-center">{contentTitle}</h2>
-          <Routes>
-            {routes.map((route) => (
-              <Route
-                key={route.path}
-                path={route.path}
-                element={route.element}
-              />
-            ))}
-          </Routes>
+        <Layout.Content className="h-full p-2 bg-white overflow-auto">
+          <div className="w-[210mm] m-auto">
+            <h2 className="pb-2 text-2xl text-center">{contentTitle}</h2>
+            <Routes>
+              {routes.map((route) => (
+                <Route
+                  key={route.path}
+                  path={route.path}
+                  element={route.element}
+                />
+              ))}
+            </Routes>
+          </div>
         </Layout.Content>
       </Layout>
     </>
