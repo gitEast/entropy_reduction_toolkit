@@ -1,15 +1,77 @@
-import ScaleForm from './components/scale-form/index'
-import ResultTotal from './components/result-total'
-import ResultMain from './components/result-main'
-import ResultFive from './components/result-five'
+import { message } from 'antd'
+import ScaleForm from './components/scale-form'
+import Result from './components/result'
+import ModalHistory from './components/modal-history'
 
-import { useState } from 'react'
-import type { IHandleChange_answer } from './type'
+import { useEffect, useState } from 'react'
+import request from '@/request'
+import CONST_resultStatus from '@/const/request-status'
+import { mainDimensions } from './data/main-dimension'
+import { fiveDimensions } from './data/five-dimension'
+
+import type { IHandleChange_answer, ITool1Record } from './type'
 
 const EntropyScale = () => {
+  // FIXME: mock data
+  /**
+  const map = new Map<number, number>()
+  map.set(1, 2)
+  map.set(2, 2)
+  map.set(3, 1)
+  map.set(4, 2)
+  map.set(5, 2)
+  map.set(6, 2)
+  map.set(7, 4)
+  map.set(8, 1)
+  map.set(9, 2)
+  map.set(10, 2)
+  map.set(11, 3)
+  map.set(12, 2)
+  map.set(13, 3)
+  map.set(14, 2)
+  map.set(15, 4)
+  map.set(16, 3)
+  map.set(17, 2)
+  map.set(18, 2)
+  map.set(19, 5)
+  map.set(20, 2)
+  map.set(21, 3)
+  map.set(22, 3)
+  map.set(23, 3)
+  map.set(24, 1)
+  map.set(25, 2)
+  map.set(26, 5)
+  map.set(27, 4)
+  map.set(28, 2)
+  map.set(29, 3)
+  map.set(30, 2)
+  map.set(31, 1)
+  map.set(32, 3)
+  const [answerMap, setAnswerMap] = useState<Map<number, number>>(map)
+  */
   const [answerMap, setAnswerMap] = useState<Map<number, number>>(new Map())
   const [isFinished, setIsFinished] = useState(false)
-  const [totalScore, setTotalScore] = useState(0)
+  const [resultRecord, setResultRecord] = useState<ITool1Record>()
+
+  /* ------------ ⬇ 历史记录 ⬇ ------------ */
+  const [history, setHistory] = useState<ITool1Record[]>([])
+  const [historyRecord, setHistoryRecord] = useState<ITool1Record>()
+  const [modalOpen, setModalOpen] = useState(false)
+  useEffect(() => {
+    const getHistory = async () => {
+      const result = await request.get('/tool1')
+      if (result.code === CONST_resultStatus.getByKey('SUCCESS')) {
+        setHistory(result.data)
+      } else message.error('历史记录获取失败')
+    }
+    getHistory()
+  }, [])
+  const handleClick_history = (record: ITool1Record) => {
+    setHistoryRecord(record)
+    setModalOpen(true)
+  }
+  const handleClose_modal = () => setModalOpen(false)
+  /* ------------ ⬆ 历史记录 ⬆ ------------ */
 
   /* ------------ ⬇ 量表 ⬇ ------------ */
   const handleChange_answer: IHandleChange_answer = (questionId, score) => {
@@ -21,18 +83,70 @@ const EntropyScale = () => {
     })
   }
   const handleReset_answer = () => setAnswerMap(new Map())
-  const handleSubmit_answer = () => {
-    setIsFinished(true)
-    const sum = Array.from(answerMap.values()).reduce(
-      (prev, cur) => prev + cur,
-      0
-    )
-    setTotalScore(sum)
+  const handleSubmit_answer = async () => {
+    try {
+      // 1. 计算数据
+      const total = Array.from(answerMap.values()).reduce(
+        (prev, cur) => prev + cur,
+        0
+      )
+      const newMainScoreMap: Record<string, number> = {}
+      mainDimensions.forEach((dimension) => {
+        newMainScoreMap[dimension.key] = dimension.referenceQuestionIds.reduce(
+          (prev, cur) => prev + (answerMap.get(cur) ?? 0),
+          0
+        )
+      })
+      const newFiveScoreMap: Record<string, number> = {}
+      fiveDimensions.forEach((dimension) => {
+        const score = dimension.referenceQuestionIds.reduce(
+          (prev, cur) => prev + (answerMap.get(cur) ?? 0),
+          0
+        )
+        newFiveScoreMap[dimension.key] =
+          score / dimension.referenceQuestionIds.length
+      })
+      const requestBody: ITool1Record = {
+        detail: JSON.stringify(Array.from(answerMap)),
+        total,
+        mainEnclosure: newMainScoreMap.enclosure,
+        mainResistance: newMainScoreMap.resistance,
+        fiveEnclosure: newFiveScoreMap.enclosure,
+        fiveEquilibrium: newFiveScoreMap.equilibrium,
+        fiveLinear: newFiveScoreMap.linear,
+        fiveDisorder: newFiveScoreMap.disorder,
+        fiveLoss: newFiveScoreMap.loss
+      }
+      // 2. 发送请求
+      await request.post('/tool1', requestBody)
+      // 3. 更新 ui
+      setIsFinished(true)
+      setResultRecord(requestBody)
+    } catch (error) {
+      message.error('提交失败')
+      console.error('tool1 提交失败：', error)
+    }
   }
   /* ------------ ⬆ 量表 ⬆ ------------ */
 
   return (
     <>
+      <ul>
+        {history.map((item) => (
+          <li
+            key={item.id}
+            className="cursor-pointer"
+            onClick={() => handleClick_history(item)}
+          >
+            id: {item.id} ，创建时间：{item.createAt}
+          </li>
+        ))}
+      </ul>
+      <ModalHistory
+        open={modalOpen}
+        record={historyRecord}
+        onClose={handleClose_modal}
+      />
       <ScaleForm
         answerMap={answerMap}
         isFinished={isFinished}
@@ -40,13 +154,7 @@ const EntropyScale = () => {
         handleReset={handleReset_answer}
         handleSubmit={handleSubmit_answer}
       />
-      {isFinished && (
-        <div className="text-base">
-          <ResultTotal totalScore={totalScore} />
-          <ResultMain answerMap={answerMap} />
-          <ResultFive answerMap={answerMap} />
-        </div>
-      )}
+      {isFinished && resultRecord && <Result record={resultRecord} />}
     </>
   )
 }

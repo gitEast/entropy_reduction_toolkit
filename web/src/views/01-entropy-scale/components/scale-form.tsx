@@ -4,10 +4,11 @@
  */
 import { Button, Checkbox, message, Space, Table } from 'antd'
 
-import { CONST_SCORE, questionList } from './data'
+import { CONST_SCORE, questionList } from '../data/scale-question'
 
 import type { CheckboxChangeEvent, TableProps } from 'antd'
-import type { IScaleForm_question, IScaleFormProps } from '../../type'
+import type { IScaleForm_question, IScaleFormProps } from '../type'
+import { useEffect, useState } from 'react'
 
 const ScaleForm = (props: IScaleFormProps) => {
   /* ------------ ⬇ 表格 ⬇ ------------ */
@@ -32,6 +33,14 @@ const ScaleForm = (props: IScaleFormProps) => {
       }
     }))
   ]
+  const [scroll, setScroll] = useState({ y: window.innerHeight - 250 })
+  useEffect(() => {
+    const handleResize = () => setScroll({ y: window.innerHeight - 250 })
+    window.addEventListener('resize', handleResize)
+    return () => {
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [])
 
   const handleChange_Check = (
     e: CheckboxChangeEvent,
@@ -43,12 +52,15 @@ const ScaleForm = (props: IScaleFormProps) => {
   /* ------------ ⬆ 表格 ⬆ ------------ */
 
   /* ------------ ⬇ 按钮操作 ⬇ ------------ */
-  const handleSubmit = () => {
+  const [loading, setLoading] = useState(false)
+  const handleSubmit = async () => {
     if (props.answerMap.size < questionList.length) {
       message.info('请确保已全部作答！')
       return
     }
-    props.handleSubmit()
+    setLoading(true)
+    await props.handleSubmit()
+    setLoading(false)
   }
   /* ------------ ⬆ 按钮操作 ⬆ ------------ */
 
@@ -62,11 +74,13 @@ const ScaleForm = (props: IScaleFormProps) => {
         rowKey="id"
         columns={columns}
         dataSource={questionList}
+        scroll={scroll}
+        loading={loading}
         bordered
         pagination={false}
       />
       {!props.isFinished && (
-        <div className="mt-2 text-center">
+        <div className="pt-2 text-center">
           <Space>
             <Button onClick={props.handleReset}>重置</Button>
             <Button type="primary" onClick={handleSubmit}>

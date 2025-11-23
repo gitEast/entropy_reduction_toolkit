@@ -1,5 +1,5 @@
 import createSmartIndex from '@/utils/createSmartIndex'
-import type { IScaleForm_question, IScaleForm_scoreMap } from '../../type'
+import type { IScaleForm_question, IScaleForm_scoreMap } from '../type'
 
 export const CONST_SCORE = createSmartIndex([
   { key: 'NEVER', value: 'never', label: '完全不符' },
@@ -142,7 +142,7 @@ export const questionList: IScaleForm_question[] = [
   },
   {
     id: 24,
-    text: '不管一件事的结果如何，我详细自己在过程中付出的努力是不会白费的',
+    text: '不管一件事的结果如何，我相信自己在过程中付出的努力是不会白费的',
     scoreMap: scoreMap_reverse
   },
   {

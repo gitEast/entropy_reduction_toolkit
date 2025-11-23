@@ -1,5 +1,22 @@
 export type IHandleChange_answer = (questionId: number, score?: number) => void
 type IVoidFn = () => void
+type IPromiseVoidFn = () => Promise<void>
+export type IScoreMap = Record<string, number>
+
+export interface ITool1Record {
+  id?: number
+  createAt?: string
+  userId?: number
+  detail: string
+  total: number
+  mainEnclosure: number
+  mainResistance: number
+  fiveEnclosure: number
+  fiveEquilibrium: number
+  fiveLinear: number
+  fiveDisorder: number
+  fiveLoss: number
+}
 
 /* ------------ ⬇ components 下组件类型 ⬇ ------------ */
 export type IScaleForm_scoreMap = Record<string, number>
@@ -13,7 +30,7 @@ export interface IScaleFormProps {
   isFinished: boolean
   handleChange: IHandleChange_answer
   handleReset: IVoidFn
-  handleSubmit: IVoidFn
+  handleSubmit: IPromiseVoidFn
 }
 
 export interface IResultTotalProps {
@@ -21,10 +38,20 @@ export interface IResultTotalProps {
 }
 
 export interface IResultMainProps {
-  answerMap: Map<number, number>
+  scoreMap: IScoreMap
 }
 
 export interface IResultFiveProps {
-  answerMap: Map<number, number>
+  scoreMap: IScoreMap
+}
+
+export interface IResultProps {
+  record: ITool1Record
+}
+
+export interface IModalHistoryProps {
+  open: boolean
+  record?: ITool1Record
+  onClose: IVoidFn
 }
 /* ------------ ⬆ components 下组件类型 ⬆ ------------ */
