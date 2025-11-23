@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: entropy_reduction_toolkit_server;
+  # 数据库配置信息
+  datasource:
+    url: jdbc:mysql://localhost:3306/entropy_reduction_toolkit
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: Chen.123456
+  servlet:
+    multipart:
+      # 最大单个文件大小
+      max-file-size: 10MB
+      # 最大请求大小（包括所有文件和表单数据）
+      max-request-size: 100MB
+# MyBatis
+mybatis:
+  configuration:
+    # 日志输出
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    # 开启驼峰命名：数据库字段与实体类字段映射
+    map-underscore-to-camel-case: true
+# 配置日志信息，查看 spring 事务管理的底层日志
+logging:
+  level:
+    org.springframework.jdbc.support.JdbcTransactionManager: debug
