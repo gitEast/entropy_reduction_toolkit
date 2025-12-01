@@ -24,8 +24,8 @@ const LinedInput = (props: IProps) => {
       isInternalChangeRef.current = false
       return
     }
-    if (inputRef.current.innerHTML === props.value) return
-    inputRef.current.innerHTML = props.value
+    if (inputRef.current.innerText === props.value) return
+    inputRef.current.innerText = props.value
   }, [props.value])
 
   const adjustInputHeight = () => {
@@ -47,7 +47,7 @@ const LinedInput = (props: IProps) => {
 
   const handleInput = () => {
     if (!inputRef.current) return
-    props.onInput?.(inputRef.current.innerHTML)
+    props.onInput?.(inputRef.current.innerText)
     adjustInputHeight()
   }
 

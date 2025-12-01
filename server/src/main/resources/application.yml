@@ -1,12 +1,9 @@
 spring:
   application:
     name: entropy_reduction_toolkit_server;
-  # 数据库配置信息
-  datasource:
-    url: jdbc:mysql://localhost:3306/entropy_reduction_toolkit
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    username: root
-    password: Chen.123456
+  # 数据库配置在 application-local.yml 文件中
+  profiles:
+    active: local
   servlet:
     multipart:
       # 最大单个文件大小

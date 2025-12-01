@@ -2,8 +2,10 @@ import { DatePicker, Select, Space, type SelectProps } from 'antd'
 
 import CONST_timeFormat from '@/const/time-format'
 import dayjs from 'dayjs'
+import { CONST_WEATHER } from '../../data'
 
 interface IProps {
+  readonly: boolean
   date: string
   dateFormat?: string
   onDateChange: (date: string) => void
@@ -22,13 +24,15 @@ const DiaryHead = (props: IProps) => {
   /* ------------ ⬆ date ⬆ ------------ */
 
   /* ------------ ⬇ weather ⬇ ------------ */
-  const weatherOptions: SelectProps['options'] = [
-    { value: 1, label: '☀️' },
-    { value: 2, label: '☁️' },
-    { value: 3, label: '🌧️' },
-    { value: 4, label: '⛈️' },
-    { value: 5, label: '❄️' }
-  ]
+  const weatherOptions: SelectProps['options'] = CONST_WEATHER.items.map(
+    (item) => ({
+      value: item.value,
+      label: item.label
+    })
+  )
+  const handleChange_weather = (weather: string) => {
+    props.onWeatherChange(weather)
+  }
   /* ------------ ⬆ weather ⬆ ------------ */
 
   return (
@@ -46,7 +50,11 @@ const DiaryHead = (props: IProps) => {
         </Space>
         <Space>
           <label>今天天气：</label>
-          <Select className="w-[140px]" options={weatherOptions} />
+          <Select
+            className="w-[140px]"
+            options={weatherOptions}
+            onChange={handleChange_weather}
+          />
         </Space>
       </Space>
     </div>

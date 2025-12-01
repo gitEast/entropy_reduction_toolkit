@@ -19,6 +19,7 @@ export interface IOption {
   value: string
 }
 interface IDiaryItemComponentProps {
+  readonly: boolean
   value: string
   options?: IOption[]
   onChange: (v: string) => any
@@ -28,6 +29,15 @@ export type IDiaryItemComponentType = (
 ) => ReactElement
 
 export interface IDiary extends Record<IDiaryContentKey, string> {
+  type?: number
   date: string
   weather: string
 }
+export interface IDiaryRecord extends IDiary {
+  id: number
+}
+
+export type IDiaryForm = Partial<Pick<IDiaryRecord, 'id'>> &
+  Omit<IDiaryRecord, 'id'>
+
+export type IViewAction = 'add' | 'view'

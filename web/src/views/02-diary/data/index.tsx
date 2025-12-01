@@ -20,14 +20,22 @@ export const CONST_diaryContent_getByKey = (
 ) => (CONST_diaryContent.getByKey(key) || '') as string
 
 export const CONST_diaryType = createSmartIndex([
-  { key: 'SADNESS', value: 'sadness', label: '悲伤' },
-  { key: 'DEPRESSION', value: 'depression', label: '抑郁' },
-  { key: 'ANXIETY', value: 'anxiety', label: '焦虑' },
-  { key: 'UNKNOWN', value: 'unknown', label: '未知' }
+  { key: 'SADNESS', value: 1, label: '悲伤' },
+  { key: 'DEPRESSION', value: 2, label: '抑郁' },
+  { key: 'ANXIETY', value: 3, label: '焦虑' },
+  { key: 'UNKNOWN', value: 4, label: '未知' }
 ] as const)
 export const CONST_diaryType_getByKey = (
   key: Parameters<typeof CONST_diaryType.getByKey>[0]
-) => (CONST_diaryType.getByKey(key) || '') as string
+) => (CONST_diaryType.getByKey(key) || 1) as number
+
+export const CONST_WEATHER = createSmartIndex([
+  { key: 'SUNNY', value: 1, label: '☀️' },
+  { key: 'CLOUDY', value: 2, label: '☁️' },
+  { key: 'RAIN', value: 3, label: '🌧️' },
+  { key: 'HEAVY_RAIN', value: 4, label: '⛈️' },
+  { key: 'SNOW', value: 5, label: '❄️' }
+] as const)
 
 export const diaryBodyConfig: Record<string, IDiaryConfig> = {
   [CONST_diaryType_getByKey('SADNESS')]: {
@@ -121,8 +129,8 @@ export const diaryBodyConfig: Record<string, IDiaryConfig> = {
     ],
     note: '致今天的焦虑君：谢谢你告诉我要采取有效行动！'
   },
-  [CONST_diaryType_getByKey('DEPRESSION')]: {
-    title: `${CONST_diaryType.getLabelByKey('DEPRESSION')}之声`,
+  [CONST_diaryType_getByKey('UNKNOWN')]: {
+    title: `${CONST_diaryType.getLabelByKey('UNKNOWN')}之声`,
     contentList: [
       {
         key: CONST_diaryContent_getByKey('THOUGHT'),
@@ -145,24 +153,37 @@ export const diaryBodyConfig: Record<string, IDiaryConfig> = {
 } as any
 
 export const componentMap: Record<IDiaryItemType, IDiaryItemComponentType> = {
-  'lined-input': ({ value, onChange }) => (
-    <LinedInput value={value} onInput={onChange} />
-  ),
-  'table-check': ({ value, options, onChange }) => (
-    <TableCheck options={options!} value={value} onChange={onChange} />
-  ),
-  'checkbox-single': ({ value, options, onChange }) => (
-    <>
-      {options!.map((opt) => (
-        <Checkbox
-          key={opt.value}
-          value={opt.value}
-          checked={value === opt.value}
-          onChange={(e) => onChange(e.target.checked ? e.target.value : '')}
-        >
-          {opt.label}
-        </Checkbox>
-      ))}
-    </>
-  )
+  'lined-input': ({ readonly, value, onChange }) => {
+    if (readonly) return <span>{value}</span>
+    else return <LinedInput value={value} onInput={onChange} />
+  },
+  'table-check': ({ readonly, value, options, onChange }) => {
+    if (readonly) {
+      const targetOpt = options?.find((opt) => opt.value === value)
+      return <span>{targetOpt ? targetOpt.label : ''}</span>
+    } else {
+      return <TableCheck options={options!} value={value} onChange={onChange} />
+    }
+  },
+  'checkbox-single': ({ readonly, value, options, onChange }) => {
+    if (readonly) {
+      const targetOpt = options?.find((opt) => opt.value === value)
+      return <span>{targetOpt ? targetOpt.label : ''}</span>
+    } else {
+      return (
+        <>
+          {options!.map((opt) => (
+            <Checkbox
+              key={opt.value}
+              value={opt.value}
+              checked={value === opt.value}
+              onChange={(e) => onChange(e.target.checked ? e.target.value : '')}
+            >
+              {opt.label}
+            </Checkbox>
+          ))}
+        </>
+      )
+    }
+  }
 }

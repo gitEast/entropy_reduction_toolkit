@@ -1,72 +1,62 @@
-import DiaryHead from './components/diary-head'
-import DiaryTypeSelect from './components/diary-type-select'
-import DiaryBody from './components/diary-body'
+import { Button, message } from 'antd'
+import DiaryView from './components/diary-view'
+import DiaryHistory from './components/diary-history'
 
-import { useState } from 'react'
-import dayjs from 'dayjs'
-import CONST_timeFormat from '@/const/time-format'
-import { diaryBodyConfig } from './data'
+import { useEffect, useState } from 'react'
+import useDiaryHook from './use-diary-hook'
 
 import type { IDiary } from './type'
 
 const Diary = () => {
-  const dateFormat = CONST_timeFormat.getByKey('DATE') as string
+  const [isAdd, setIsAdd] = useState(false)
+  const diaryHook = useDiaryHook()
 
-  const [diary, setDiary] = useState<IDiary>({
-    date: dayjs().format(dateFormat),
-    weather: '',
-    cause: '',
-    thought: '',
-    feeling: ''
-  })
-  const handleChange_date = (date: string) => {
-    setDiary((prev) => ({ ...prev, date }))
-  }
-  const handleChange_weather = (weather: string) => {
-    setDiary((prev) => ({ ...prev, weather }))
-  }
-  const handleChange_cause = (cause: string) => {
-    setDiary((prev) => ({ ...prev, cause }))
-  }
-  const handleChange_thought = (thought: string) => {
-    setDiary((prev) => ({ ...prev, thought }))
-  }
-  const handleChange_feeling = (feeling: string) => {
-    setDiary((prev) => ({ ...prev, feeling }))
-  }
+  /* ------------ ⬇ 历史记录 ⬇ ------------ */
+  useEffect(() => {
+    diaryHook.fetchHistory()
+  }, [])
+  /* ------------ ⬆ 历史记录 ⬆ ------------ */
 
-  /* ------------ ⬇ diary body ⬇ ------------ */
-  const [diaryType, setDiaryType] = useState('anxiety')
-  const handleSelectDiaryType = (type: string) => {
-    setDiaryType(type)
+  /* ------------ ⬇ 新增相关 ⬇ ------------ */
+  const handleClick_add = () => {
+    setIsAdd(true)
   }
-  /* ------------ ⬆ diary body ⬆ ------------ */
+  const handleAddSubmit = async (params: IDiary) => {
+    if (Object.values(params).some((val) => !val)) {
+      message.warning('请填写完整')
+      return false
+    }
+    const success = await diaryHook.addRequest(params)
+    if (success) {
+      message.success('提交成功')
+      diaryHook.fetchHistory()
+    } else message.error('提交失败，请重试')
+    return success
+  }
+  const handleAddBack = () => {
+    setIsAdd(false)
+  }
+  /* ------------ ⬆ 新增相关 ⬆ ------------ */
 
   return (
     <>
       <p>
         将每天觉察到的感受和事件写下来。记录一段时间后，可以在情绪平和时打开这本日记，回顾过往那些压在心头的感受，并以第三人的视角做出客观的自省。这个过程持续下去，便可以帮助你在不知不觉中排解出积压在内心这个小黑屋里的熵。
       </p>
-      <div className="border-2 mt-2">
-        <DiaryHead
-          date={diary.date}
-          weather={diary.weather}
-          onDateChange={handleChange_date}
-          onWeatherChange={handleChange_weather}
+      {isAdd ? (
+        <DiaryView
+          action="add"
+          onBack={handleAddBack}
+          onSubmit={handleAddSubmit}
         />
-        {!diaryType && <DiaryTypeSelect onChange={handleSelectDiaryType} />}
-        {diaryType && (
-          <DiaryBody
-            {...diaryBodyConfig[diaryType]}
-            diary={diary}
-            handlerMap={{
-              cause: handleChange_cause,
-              thought: handleChange_thought,
-              feeling: handleChange_feeling
-            }}
-          />
-        )}
-      </div>
+      ) : (
+        <div className="mt-4">
+          <Button type="primary" onClick={handleClick_add}>
+            新增
+          </Button>
+          <DiaryHistory list={diaryHook.history} />
+        </div>
+      )}
     </>
   )
 }

@@ -1,15 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <configuration>
-    <!-- 控制台输出 -->
+    <!-- 1. 控制台输出 (只打印 INFO 及以上级别) -->
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <!-- 使用过滤器，只允许 INFO 及以上级别的日志通过 -->
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
             <!-- 格式化输出：%d 表示日期，%thread 表示线程名，%-5level 级别从左显示 5 个字符宽度；%logger{50} 最长 50 个字符 -->
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
         </encoder>
     </appender>
 
-    <!-- 系统文件输出 -->
-    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <!-- 2. 所有日志文件 (记录 DEBUG 及以上级别) -->
+    <appender name="FILE_ALL" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
             <!-- 日志文件输出的文件名，%i 表示序号 -->
             <FileNamePattern>log/tlias-%d{yyyy-MM-dd}-%i.log</FileNamePattern>
@@ -25,9 +29,28 @@
         </encoder>
     </appender>
 
+    <!-- 3. 错误日志文件 (只记录 ERROR 级别) -->
+    <appender name="FILE_ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 使用过滤器，只允许 ERROR 级别的日志通过 -->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <FileNamePattern>log/tlias-error-%d{yyyy-MM-dd}-%i.log</FileNamePattern>
+            <MaxHistory>30</MaxHistory>
+            <MaxFileSize>10MB</MaxFileSize>
+        </rollingPolicy>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
     <!-- 日志输出级别 -->
-    <root level="DEBUG">
+    <root level="ERROR">
         <appender-ref ref="STDOUT" />
 <!--        <appender-ref ref="FILE" />-->
+<!--        <appender-ref ref="FILE_ERROR" />-->
     </root>
 </configuration>

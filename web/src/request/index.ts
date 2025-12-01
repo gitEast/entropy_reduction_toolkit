@@ -1,8 +1,25 @@
+import CONST_resultStatus from '@/const/request-status'
+
 class Request {
+  async #responseInterceptor(response: Response) {
+    if (response.ok) return await response.json()
+    else {
+      let data: any = await response.text()
+      console.log(data)
+      try {
+        if (JSON.parse(data)) {
+          data = JSON.parse(data)
+        }
+      } catch (error) {
+        console.log('返回不是个 json 对象')
+      }
+      return { code: CONST_resultStatus.getByKey('FAIL'), data }
+    }
+  }
+
   async get(url: string) {
     const response = await fetch(`/api${url}`)
-    const result = await response.json()
-    return result
+    return await this.#responseInterceptor(response)
   }
 
   async post(url: string, body: any) {
@@ -11,8 +28,7 @@ class Request {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
     })
-    const result = await response.json()
-    return result
+    return await this.#responseInterceptor(response)
   }
 
   async put(url: string, body: any) {
@@ -21,16 +37,14 @@ class Request {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
     })
-    const result = await response.json()
-    return result
+    return await this.#responseInterceptor(response)
   }
 
   async delete(url: string) {
     const response = await fetch(`/api${url}`, {
       method: 'DELETE'
     })
-    const result = await response.json()
-    return result
+    return await this.#responseInterceptor(response)
   }
 }
 

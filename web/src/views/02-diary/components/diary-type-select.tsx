@@ -2,7 +2,7 @@ import { Radio, type RadioChangeEvent } from 'antd'
 import { CONST_diaryType } from '../data'
 
 interface IProps {
-  onChange: (type: string) => void
+  onChange: (type: number) => void
 }
 
 const DiaryTypeSelect = (props: IProps) => {
