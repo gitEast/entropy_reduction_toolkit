@@ -1,9 +1,10 @@
-import { Layout, Menu, type MenuProps } from 'antd'
+import { Button, Layout, Menu, type MenuProps } from 'antd'
 
 import routes from '@/routes'
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import CONST_TOOL from '@/const/tool'
+import { LeftOutlined, RightOutlined } from '@ant-design/icons'
 
 const menuItems: Required<MenuProps>['items'] = routes
   .filter((route) => route.id !== 'home')
@@ -23,6 +24,11 @@ const Views = () => {
     navigate(e.key)
   }
 
+  const [isCollapse, setIsCollapse] = useState(false)
+  const handleCollapse = () => {
+    setIsCollapse(!isCollapse)
+  }
+
   const contentTitle = useMemo(
     () => CONST_TOOL.getLabelByValue(location.pathname.slice(1) as any),
     [location.pathname]
@@ -31,7 +37,10 @@ const Views = () => {
   return (
     <>
       <Layout className="h-full overflow-hidden">
-        <Layout.Sider className="bg-white!" width={280}>
+        <Layout.Sider
+          className="relative bg-white!"
+          width={isCollapse ? 0 : 280}
+        >
           <Menu
             mode="inline"
             className="h-full"
@@ -39,6 +48,15 @@ const Views = () => {
             selectedKeys={selectedMenuKeys}
             onClick={handleClick_menu}
           />
+          <div
+            className="absolute bottom-[50%] right-0 translate-x-[50%]"
+            onClick={handleCollapse}
+          >
+            <Button
+              shape="circle"
+              icon={isCollapse ? <RightOutlined /> : <LeftOutlined />}
+            />
+          </div>
         </Layout.Sider>
         <Layout.Content className="h-full p-2 bg-white overflow-auto">
           <div className="w-[210mm] m-auto">
